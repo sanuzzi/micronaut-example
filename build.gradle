@@ -1,0 +1,105 @@
+plugins {
+    id "io.spring.dependency-management" version "1.0.6.RELEASE"
+    id "com.github.johnrengelman.shadow" version "4.0.0"
+    id "org.jetbrains.kotlin.jvm" version "1.3.0"
+    id "org.jetbrains.kotlin.kapt" version "1.3.0"
+    id "org.jetbrains.kotlin.plugin.allopen" version "1.3.0"
+}
+
+apply plugin:"application"
+apply plugin:"groovy"
+
+version "0.1"
+group "com.example"
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven { url "https://jcenter.bintray.com" }
+}
+
+dependencyManagement {
+    imports {
+        mavenBom 'io.micronaut:micronaut-bom:1.0.0'
+    }
+}
+
+dependencies {
+    compile "io.micronaut:micronaut-http-client"
+    compile "io.micronaut:micronaut-http-server-netty"
+
+    // Para poder crear entidades en el código y sus relaciones, y que se reflejen en la base de datos sin hacer laburo adicional
+    compile "io.micronaut.configuration:micronaut-hibernate-jpa"
+
+    // Para manejar el pool (conjunto) de conexiones a la base de datos
+    compile "io.micronaut.configuration:micronaut-jdbc-hikari"
+
+    // Otra alternativa a hikari es tomcat (renglón siguiente) pero al parecer hikari es más rápido
+    // compile "io.micronaut.configuration:micronaut-jdbc-tomcat"
+
+    // Para poder hablarle a la base de datos
+    compile group: 'mysql', name: 'mysql-connector-java', version: '8.0.13'
+    
+    // Para validar que la información que nos llega esté correcta. Permite ciertos annotations como @NotBlank en las clases para modelar los JSON's
+    compile "io.micronaut.configuration:micronaut-hibernate-validator"
+
+    // Para poder tener una base en memoria para cuando se ejecutan los tests
+    runtime "com.h2database:h2"
+
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}"
+    compile "org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}"
+    
+    // Se vio en un tutorial. No quedó claro si con esto nos ahorra un par de configuraciones del proyecto
+    annotationProcessor "javax.persistence:javax.persistence-api:2.2"
+
+    compile "io.micronaut:micronaut-runtime"
+    kapt "io.micronaut:micronaut-inject-java"
+    kapt "io.micronaut:micronaut-validation"
+    kaptTest "io.micronaut:micronaut-inject-java"
+    runtime "ch.qos.logback:logback-classic:1.2.3"
+    runtime "com.fasterxml.jackson.module:jackson-module-kotlin:2.9.4.1"
+    testCompile("org.spockframework:spock-core") {
+        exclude group: "org.codehaus.groovy", module: "groovy-all"
+    }
+    testCompile "io.micronaut:micronaut-inject-groovy"
+    testCompile "org.junit.jupiter:junit-jupiter-api:5.1.0"
+    testCompile "org.jetbrains.spek:spek-api:1.1.5"
+    testCompile "junit:junit:4.12"
+    testCompile "io.micronaut:micronaut-inject-java"
+    testCompile "org.hamcrest:hamcrest-all:1.3"
+    testRuntime "org.junit.jupiter:junit-jupiter-engine:5.1.0"
+    testRuntime "org.jetbrains.spek:spek-junit-platform-engine:1.1.5"
+}
+
+shadowJar {
+    mergeServiceFiles()
+}
+
+run.jvmArgs('-noverify', '-XX:TieredStopAtLevel=1')
+
+mainClassName = "com.example.Application"
+
+
+test {
+    useJUnitPlatform()
+}
+
+allOpen {
+	annotation("io.micronaut.aop.Around")
+}
+
+compileKotlin {
+	kotlinOptions {
+	    jvmTarget = '1.8'
+	    //Will retain parameter names for Java reflection
+	    javaParameters = true 
+	}
+}
+
+compileTestKotlin {
+	kotlinOptions {
+	    jvmTarget = '1.8' 
+	    javaParameters = true 
+	}
+}
+
