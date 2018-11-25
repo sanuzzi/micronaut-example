@@ -1,0 +1,26 @@
+---
+micronaut:
+    application:
+        name: my-app-example
+
+---
+datasources:
+  default:
+    url: jdbc:mysql://localhost:3306/micronaut_example?serverTimezone=UTC
+    driverClassName: com.mysql.cj.jdbc.Driver
+    username: root
+    password: ''
+    dbCreate: create-drop
+jpa:
+  default:
+    packages-to-scan: # Agregarlo después, cuando se separen las clases
+      - 'com.example'
+    properties:
+      hibernate:
+        hbm2ddl:
+          auto: update
+        show_sql: true
+
+
+---
+datasources.default: {}
